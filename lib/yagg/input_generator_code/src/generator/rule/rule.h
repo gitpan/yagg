@@ -14,8 +14,6 @@ class Rule
   friend class Rule_List;
 
 public:
-  virtual Rule* Clone() const = 0;
-
   virtual ~Rule();
 
   virtual void Initialize(const unsigned int in_allowed_length, const Rule* in_previous_rule = NULL);
@@ -27,7 +25,7 @@ public:
   virtual const bool Needs_Reset() const;
 
   virtual const bool Check_For_String();
-  virtual const list<string> Get_String() const = 0;
+  virtual const list<string>& Get_String() const = 0;
 
   virtual const Rule* Get_Previous_Rule() const;
 
@@ -35,9 +33,9 @@ public:
 
 protected:
   Rule();
-  Rule(const Rule &in_rule);
 
-  virtual const Rule& operator= (const Rule &in_rule);
+private:
+  Rule(const Rule &in_rule);
 
 protected:
   const Rule* m_previous_rule;

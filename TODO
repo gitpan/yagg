@@ -1,9 +1,8 @@
 Generator TODOs:
 
-- Un-full-path programs when using remote compilation and execution
 - Update the language grammar so that it supports equivalences, so that the
   terminal input file is not necessary in this case either.
-- Change the directory mirroring so that it removes additonal files from
+- Change the directory mirroring so that it removes additional files from
   output/src, but not others. Need to update the GNUmakefile to remove .o and
   .d files if the corresponding source file is missing. This will make -f
   largely unnecessary, and will allow reuse of already compiled generator
@@ -31,6 +30,20 @@ Generator TODOs:
     rules. That way we could just count how many total terminals have been
     created of a given type. (If more than one match_# has allocated its
     rules, this count will be more than it should be.)
+- Doesn't process grammar here: http://pltplp.net/lex-yacc/example.html.en
+  correctly
+- Modify the terminal parser grammar so that it accepts unquoted strings in
+  alternations and equivalences. e.g. (a|b) and [a|b] instead of ("a"|"b") and
+  ["a"|"b"]
+- .lg files aren't parsed correctly if a definition follows right after
+  another:
+  "+"             return PLUS;
+  "-"             return MINUS;
+- YYLVAL isn't supported instead of %union. See
+  http://pltplp.net/lex-yacc/example.html.en
+- Make sure the default rule $$ = $1 is implemented, and that it doesn't
+  prevent the caching nonterminal rule template from being used.
+- During installation, ask for default make arguments like "-j4"
 
 -----------------------------------------------------------------------------
 
@@ -38,16 +51,13 @@ Fault tree TODOs:
 
 - Check/fix type order vs. system event order. Maybe some FTs are not being
   generated...
-- All Ensure_* functions should return a bool
 
 -----------------------------------------------------------------------------
 
 Generated code TODOs:
 
-- Is there some way to implement Clone() in the Rule base class using RTTI?
 - make dist fails for generated code (todo.txt, etc). Need to update the
   makefile
-- See if we can prevent so many copies for Get_Value() and Do/Undo_Action.
 - Speed up the generation, hopefully by reducing the amount of recursion. (1)
   I've noticed that the generator calls reset a lot, then calls reset again
   while checking for strings. Sometimes this is necessary, but always? (2) Can
@@ -59,5 +69,3 @@ Generated code TODOs:
   but we could compute the modulus for recursive grammars. NOTE: It's not
   clear that this will actually save us a lot of work, given that I've
   implemented an optimization to cache previously generated allocations.
-- Be smarter about when to make copies of $1, $2, etc in Do_Action and
-  Undo_Action. See if we can avoid all the new()s and delete()s.

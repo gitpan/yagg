@@ -13,13 +13,21 @@ for (my $i = 1; $i <= @productions; $i++)
 }
 ]]]
 public:
-  virtual [[[$nonterminal]]]* Clone() const;
+  [[[$nonterminal]]]();
+  virtual ~[[[$nonterminal]]]();
 
   virtual void Initialize(const unsigned int in_allowed_length, const Rule *in_previous_rule = NULL);
 [[[
 if (defined $return_type)
 {
-  $OUT .= "\n  virtual $return_type Get_Value() const;\n";
+  $OUT .= "\n  virtual const $return_type Get_Value() const;\n";
+}
+]]]
+protected:
+[[[
+foreach my $i (1..$#productions+1)
+{
+  $OUT .= "  match_$i *m_$i;\n";
 }
 ]]]};
 

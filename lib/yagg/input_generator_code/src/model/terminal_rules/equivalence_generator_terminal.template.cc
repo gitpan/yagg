@@ -7,13 +7,6 @@ using namespace std;
 
 // ---------------------------------------------------------------------------
 
-[[[$terminal]]]* [[[$terminal]]]::Clone() const
-{
-  return new [[[$terminal]]](*this);
-}
-
-// ---------------------------------------------------------------------------
-
 const bool [[[$terminal]]]::Check_For_String()
 {
   if (!Is_Valid())
@@ -31,59 +24,58 @@ const bool [[[$terminal]]]::Check_For_String()
 
   m_string_count++;
 
-  if (m_string_count <= counts.size() + 1)
-  {
-    counts[m_string_count]++;
-    return true;
-  }
-  else
+  if (m_string_count > counts.size() + 1)
     return false;
-}
 
-// ---------------------------------------------------------------------------
+  counts[m_string_count]++;
 
-const list<string> [[[$terminal]]]::Get_String() const
-{
-  list<string> strings;
-
-  stringstream temp_stream;
-[[[
-  if (defined $nonpointer_return_type)
-  {
-    $OUT .= "  $return_type value = Get_Value();\n";
-    $OUT .= "  temp_stream << *value;\n";
-    $OUT .= "  delete value;\n";
-  }
-  else
-  {
-    $OUT .= "  temp_stream << Get_Value();\n";
-  }
-]]]
-  strings.push_back(temp_stream.str());
-  return strings;
-}
-
-// ---------------------------------------------------------------------------
-
-[[[$return_type]]] [[[$terminal]]]::Get_Value() const
-{
-  stringstream temp_stream;
 [[[
 my ($prefix,$suffix) = $strings[0] =~ /^['"](.*(?<!\\))#(.*)["']$/;
+$OUT .= "  stringstream temp_stream;\n\n";
 $OUT .= "  temp_stream";
 $OUT .= " << \"$prefix\"" if $prefix ne '';
 $OUT .= " << m_string_count";
 $OUT .= " << \"$suffix\"" if $suffix ne '';
 $OUT .= ";\n";
 
+$OUT .= "  return_value = temp_stream.str();";
+]]]
+
+  strings.clear();
+
+  strings.push_back(return_value);
+
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+
+const list<string>& [[[$terminal]]]::Get_String() const
+{
+  return strings;
+}
+
+// ---------------------------------------------------------------------------
+
+[[[
 if (defined $nonpointer_return_type)
 {
-  $OUT .= "  return new $nonpointer_return_type(temp_stream.str());";
+  $OUT .= <<EOF;
+const $return_type ${terminal}::Get_Value() const
+{
+  return &return_value;
+}
+EOF
 }
 else
 {
-  $OUT .= "  return $return_type(temp_stream.str());";
+  $OUT .= <<EOF;
+const $return_type& ${terminal}::Get_Value() const
+{
+  return return_value;
+}
+EOF
 }
 
+chomp $OUT;
 ]]]
-}

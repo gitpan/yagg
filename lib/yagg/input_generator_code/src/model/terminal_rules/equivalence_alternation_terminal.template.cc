@@ -1,17 +1,16 @@
 #include "model/terminal_rules/[[[$terminal]]].h"
-#include <sstream>
+[[[
+if ($return_type ne 'string' ||
+    defined $nonpointer_return_type && $nonpointer_return_type ne 'string')
+{
+  $OUT .= "#include <sstream>";
+}
+]]]
 #include <cassert>
 #include <list>
 #include <map>
 
 using namespace std;
-
-// ---------------------------------------------------------------------------
-
-[[[$terminal]]]* [[[$terminal]]]::Clone() const
-{
-  return new [[[$terminal]]](*this);
-}
 
 // ---------------------------------------------------------------------------
 
@@ -32,85 +31,80 @@ const bool [[[$terminal]]]::Check_For_String()
 
   m_string_count++;
 
-  if (m_string_count <= counts.size() + 1 && m_string_count <= [[[$size]]])
-  {
-    counts[m_string_count]++;
-    return true;
-  }
-  else
+  if (m_string_count <= counts.size() + 1 && m_string_count > [[[$size]]])
     return false;
-}
 
-// ---------------------------------------------------------------------------
-
-const list<string> [[[$terminal]]]::Get_String() const
-{
-  assert(m_string_count <= [[[$size]]]);
-
-  list<string> strings;
-
-  stringstream temp_stream;
-[[[
-  if (defined $nonpointer_return_type)
-  {
-    $OUT .= "  $return_type value = Get_Value();\n";
-    $OUT .= "  temp_stream << *value;\n";
-    $OUT .= "  delete value;\n";
-  }
-  else
-  {
-    $OUT .= "  temp_stream << Get_Value();\n";
-  }
-]]]
-  strings.push_back(temp_stream.str());
-  return strings;
-}
-
-// ---------------------------------------------------------------------------
-
-[[[$return_type]]] [[[$terminal]]]::Get_Value() const
-{
-  assert(m_string_count <= [[[$size]]]);
+  counts[m_string_count]++;
 
   switch (m_string_count)
   {
 [[[
 for (my $i = 1; $i-1 < $size; $i++)
 {
-  if (defined $nonpointer_return_type)
-  {
-    $OUT .=<<"EOF";
+  $OUT .=<<"EOF";
     case $i :
     {
-      return new $nonpointer_return_type($strings[$i-1]);
+      return_value = $strings[$i-1];
       break;
     }
 EOF
-  }
-  else
-  {
-    $OUT .=<<"EOF";
-    case $i :
-    {
-      return $return_type($strings[$i-1]);
-      break;
-    }
-EOF
-  }
 }
-
-$OUT .=<<EOF;
+]]]
   }
 
-EOF
+  strings.clear();
 
-if (defined $nonpointer_return_type)
+[[[
+if ($return_type ne 'string' ||
+    defined $nonpointer_return_type && $nonpointer_return_type ne 'string')
 {
-  $OUT .= "  return new $nonpointer_return_type();";
+  $OUT .= <<EOF;
+  stringstream temp_stream;
+  temp_stream << return_value;
+
+  strings.push_back(temp_stream.str());
+EOF
 }
 else
 {
-  $OUT .= "  return $return_type();";
+  $OUT .= <<EOF;
+  strings.push_back(return_value);
+EOF
 }
 ]]]
+  return true;
 }
+
+// ---------------------------------------------------------------------------
+
+const list<string>& [[[$terminal]]]::Get_String() const
+{
+  assert(m_string_count <= [[[$size]]]);
+
+  return strings;
+}
+
+// ---------------------------------------------------------------------------
+
+[[[
+if (defined $nonpointer_return_type)
+{
+  $OUT .= <<EOF;
+const $return_type ${terminal}::Get_Value() const
+{
+  return &return_value;
+}
+EOF
+}
+else
+{
+  $OUT .= <<EOF;
+const $return_type& ${terminal}::Get_Value() const
+{
+  return return_value;
+}
+EOF
+}
+
+chomp $OUT;
+]]]

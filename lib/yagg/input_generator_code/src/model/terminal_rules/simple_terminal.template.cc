@@ -1,52 +1,88 @@
 #include "model/terminal_rules/[[[$terminal]]].h"
-#include <sstream>
+[[[
+if ($return_type ne 'string' ||
+    defined $nonpointer_return_type && $nonpointer_return_type ne 'string')
+{
+  $OUT .= "#include <sstream>";
+}
+]]]
+#include <list>
 
 using namespace std;
 
 // ---------------------------------------------------------------------------
 
-[[[$terminal]]]* [[[$terminal]]]::Clone() const
+[[[$terminal]]]::[[[$terminal]]]()
 {
-  return new [[[$terminal]]](*this);
+  return_value = [[[ $strings[0] ]]];
+
+  strings.clear();
+
+[[[
+if ($return_type ne 'string' ||
+    defined $nonpointer_return_type && $nonpointer_return_type ne 'string')
+{
+  $OUT .= <<EOF;
+  stringstream temp_stream;
+  temp_stream << return_value;
+
+  strings.push_back(temp_stream.str());
+EOF
+}
+else
+{
+  $OUT .= <<EOF;
+  strings.push_back(return_value);
+EOF
+}
+
+chomp $OUT;
+]]]
 }
 
 // ---------------------------------------------------------------------------
 
-const list<string> [[[$terminal]]]::Get_String() const
+const bool [[[$terminal]]]::Check_For_String()
 {
-  list<string> strings;
+  m_string_count++;
 
-  stringstream temp_stream;
-[[[
-  if (defined $nonpointer_return_type)
-  {
-    $OUT .= "  $return_type value = Get_Value();\n";
-    $OUT .= "  temp_stream << *value;\n";
-    $OUT .= "  delete value;\n";
-  }
-  else
-  {
-    $OUT .= "  temp_stream << Get_Value();\n";
-  }
-]]]
-  strings.push_back(temp_stream.str());
+  if (m_string_count > 1)
+    return false;
+
+  if (!Is_Valid())
+    return false;
+
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+
+const list<string>& [[[$terminal]]]::Get_String() const
+{
   return strings;
 }
 
 // ---------------------------------------------------------------------------
 
-[[[$return_type]]] [[[$terminal]]]::Get_Value() const
-{
 [[[
-
 if (defined $nonpointer_return_type)
 {
-  $OUT .= "  return new $nonpointer_return_type($strings[0]);";
+  $OUT .= <<EOF;
+const $return_type ${terminal}::Get_Value() const
+{
+  return &return_value;
+}
+EOF
 }
 else
 {
-  $OUT .= "  return $return_type($strings[0]);";
+  $OUT .= <<EOF;
+const $return_type& ${terminal}::Get_Value() const
+{
+  return return_value;
+}
+EOF
 }
 
+chomp $OUT;
 ]]]
-}
