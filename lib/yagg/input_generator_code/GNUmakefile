@@ -19,16 +19,17 @@ YACCFILEEXT = y
 LEXFILEEXT = lex
 SCRIPTFILEEXT = sh
 
-# Typical flags for GNU compilers: -g (debugging information), -pg (profiling),
-# -O2 (optimization), -Idir (extra include directory), -DDEBUG,
-# -Wall (all warnings)
+# Typical flags for GNU compilers:
+#  -g (debugging information), -p (profiling), -Wall (all warnings)
+#  -O2 (optimization), -Idir (extra include directory), -DDEBUG
 
 #CFLAGS		= -Wall -g -DRULE_LIST_DEBUG \
 #                  -DTERMINAL_RULE_DEBUG -DNONTERMINAL_RULE_DEBUG -DRULE_DEBUG \
 #                  -DSHORT_RULE_TRACE -DACTION_TRACE \
 #                  -DDEBUG_FAULT_TREE_CONSTRAINTS \
-#                  -DDISABLE_PRODUCTION_LENGTH_OPTIMIZATION
-#                  -DDISABLE_ALLOCATION_CACHING_OPTIMIZATION
+#                  -DDISABLE_PRODUCTION_LENGTH_OPTIMIZATION \
+#                  -DDISABLE_ALLOCATION_CACHING_OPTIMIZATION \
+#                  -DDISABLE_GENERATED_STRING_CACHING_OPTIMIZATION
 CFLAGS		= -Wall -pedantic -O3
 FFLAGS		= -g -C
 
@@ -45,35 +46,35 @@ MAKEFILE_NAME := GNUmakefile
 # -----------------------------------------------------------------------------
 
 # Programs
-LN          = ln
-CP          = cp
-RM          = rm
-MV          = mv
+LN          = '/sw/bin/ln'
+CP          = '/sw/bin/cp'
+RM          = '/bin/rm'
+MV          = '/sw/bin/mv'
 BASH        = bash
-FIND        = find
-GREP        = grep
-CHMOD	    = chmod
+FIND        = '/sw/bin/find'
+GREP        = '/usr/bin/grep'
+CHMOD	    = '/sw/bin/chmod'
 CC          = gcc
-CXX         = g++
+CXX         = '/usr/bin/g++'
 FC          = g77
-LD          = g++
-AR          = ar
+LD          = '/usr/bin/g++'
+AR          = '/usr/bin/ar'
 LEX         = flex
 UNIX2DOS    = unix2dos
 YACC        = yacc
-MKDIR       = mkdir
+MKDIR       = '/sw/bin/mkdir'
 TAR         = tar
 GZIP        = gzip
 ZIP         = zip
 DIFF        = diff
 MKDIRHIER   = $(PERL) $(UTILSDIR)/mkdirhier.pl
-DATE        = date
-PERL        = perl
+DATE        = '/bin/date'
+PERL        = '/usr/bin/perl'
 MAKEDEPEND  = $(PERL) $(UTILSDIR)/makedependgcc
 COLORS      = $(PERL) $(UTILSDIR)/colors
 BASEDIR     = $(PERL) $(UTILSDIR)/basedir
-DIRNAME     = dirname
-EXPR        = expr
+DIRNAME     = '/usr/bin/dirname'
+EXPR        = '/bin/expr'
 
 # -----------------------------------------------------------------------------
 
@@ -94,6 +95,15 @@ ERROR_BACKGROUND = red
 
 # -----------------------------------------------------------------------------
 
+# Sometimes a compiled test will go into an infinite loop. Set these values to
+# limit the amount of time or output that a compiled test can generate before
+# it is killed. Use 0 for no limit.
+
+COMPILED_TESTS_TIME_LIMIT = 10
+COMPILED_TESTS_BYTE_LIMIT = 0
+
+# -----------------------------------------------------------------------------
+
 # Set to true to store files in another location and create symbolic links to
 # the current directory. This is useful for systems with slow NFS performance,
 # or systems with limited user disk space. (i.e. we can store things in /tmp
@@ -106,7 +116,7 @@ STORAGE_DIRECTORY = /tmp/$(USER)/$(PROJECTNAME)
 
 ###############################################################################
 
-default : progs
+all : progs
 
 # Custom dependencies, if any, go here
 
@@ -168,19 +178,19 @@ SRC_DIRS_PATTERN = $(call make_pattern,$(call compute_subdirs_with_sources))
 # Some subroutines to find source files and compute their corresponding object
 # files
 find_source_files = \
-  $(shell $(FIND) $(SRCDIR) -regex '$(SRCDIR)/$(1)/.*\.$(SRC_FILE_EXTS_PATTERN)')
+  $(shell $(FIND)  $(SRCDIR) -regex '$(SRCDIR)/$(1)/.*\.$(SRC_FILE_EXTS_PATTERN)')
 
 find_shell_scripts = \
-  $(shell $(FIND) $(SRCDIR) -regex '$(SRCDIR)/$(1)/.*\.$(SCRIPTFILEEXT)')
+  $(shell $(FIND)  $(SRCDIR) -regex '$(SRCDIR)/$(1)/.*\.$(SCRIPTFILEEXT)')
 
 # In case we need this later
 #find_nonsource_files = \
 #  $(filter-out \
-#    $(shell $(FIND) $(SRCDIR) -regex '$(SRCDIR)/$(1)/.*\.$(SRC_FILE_EXTS_PATTERN)'), \
-#    $(shell $(FIND) $(SRCDIR) -regex '$(SRCDIR)/$(1)/.*'))
+#    $(shell $(FIND)  $(SRCDIR) -regex '$(SRCDIR)/$(1)/.*\.$(SRC_FILE_EXTS_PATTERN)'), \
+#    $(shell $(FIND)  $(SRCDIR) -regex '$(SRCDIR)/$(1)/.*'))
 
 find_gen_source_files = \
-  $(shell $(FIND) $(SRCDIR) -regex '$(SRCDIR)/$(1)/.*\.$(GENERATED_SRC_FILE_EXTS_PATTERN)')
+  $(shell $(FIND)  $(SRCDIR) -regex '$(SRCDIR)/$(1)/.*\.$(GENERATED_SRC_FILE_EXTS_PATTERN)')
 
 compute_subdirs_with_sources = $(filter-out progs tests progs/% tests/%, \
   $(sort $(subst $(SRCDIR)/,, \
@@ -500,7 +510,7 @@ compiled_tests : lib compiled_tests_message $(COMPILED_TESTS)
 	 export COMPILED_TESTS_FAIL="0"; \
 	 for test in $(COMPILED_TESTS); do \
 	   echo -n $(BACKGROUND); echo -n $(FOREGROUND); echo -n $(CYAN)'> Running test '"$$test... "$(TEXTCOLOR); \
-	   if $$test 1> $$test.stdout 2>$$test.stderr ; then \
+	   if ./util/ensure_progress $(COMPILED_TESTS_TIME_LIMIT) $(COMPILED_TESTS_BYTE_LIMIT) $$test 1> $$test.stdout 2>$$test.stderr ; then \
 	     COMPILED_TESTS_PASS=`$(EXPR) $$COMPILED_TESTS_PASS + 1`; \
 	     echo PASS; \
 	     $(RM) $$test.stdout $$test.stderr; \
@@ -593,8 +603,10 @@ $(PROGDIR)/% : $(LIBDIR)/lib$(LIBRARY_NAME).a $(BUILDDIR)/progs/%.o
 $(LIBDIR)/lib$(LIBRARY_NAME).a : $(call compute_ofiles,$(SRC_DIRS_PATTERN))
 	@$(call sub_step_msg,Making library $@)
 	@$(call make_directory,$(shell $(DIRNAME) $@))
-	@$(AR) rv $@ $^ 2>&1
-	@ranlib $@
+	@if test '$^' != ''; then \
+	   $(AR) rv $@ $^ 2>&1; \
+	   ranlib $@; \
+	 fi
 
 # Rule to generate parser .$(CCFILEEXT) files from .$(YACCFILEEXT) files
 $(BUILDDIR)/%.$(CCFILEEXT) $(BUILDDIR)/%.h : $(SRCDIR)/%.$(YACCFILEEXT)

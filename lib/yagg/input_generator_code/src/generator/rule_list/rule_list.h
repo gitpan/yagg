@@ -46,15 +46,14 @@ public:
 #ifndef DISABLE_ALLOCATION_CACHING_OPTIMIZATION
   virtual const unsigned int Get_Allowed_Length() const;
   virtual const vector< unsigned int > Get_Allocations() const;
-  virtual void Set_Allocations(const vector< unsigned int > &in_allocations);
 #endif // DISABLE_ALLOCATION_CACHING_OPTIMIZATION
+
+  virtual void Set_Allocations(const vector< unsigned int > &in_allocations);
 
   friend ostream& operator<< (ostream& in_ostream, const Rule_List& in_rule_list);
   friend void Utility::yyerror();
 
 protected:
-  virtual const list<const Rule*> Get_Terminals() const;
-
   virtual const Rule_List& operator= (const Rule_List &in_rule_list);
 
 protected:
@@ -77,6 +76,8 @@ protected:
   bool m_needs_reset;
   bool m_first_string;
   bool m_error_occurred;
+
+  list<const Rule*> m_terminals;
 
 #ifndef DISABLE_ALLOCATION_CACHING_OPTIMIZATION
   static Allocations_Cache m_allocations_cache;
