@@ -1,4 +1,4 @@
-#line 1 "inc/File/Spec/Functions.pm - /System/Library/Perl/5.8.1/darwin-thread-multi-2level/File/Spec/Functions.pm"
+#line 1 "inc/File/Spec/Functions.pm - /System/Library/Perl/5.8.6/File/Spec/Functions.pm"
 package File::Spec::Functions;
 
 use File::Spec;
