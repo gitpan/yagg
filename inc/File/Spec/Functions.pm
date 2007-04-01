@@ -1,4 +1,4 @@
-#line 1 "inc/File/Spec/Functions.pm - /System/Library/Perl/5.8.6/File/Spec/Functions.pm"
+#line 1
 package File::Spec::Functions;
 
 use File::Spec;
@@ -47,54 +47,5 @@ foreach my $meth (@EXPORT, @EXPORT_OK) {
 1;
 __END__
 
-=head1 NAME
+#line 108
 
-File::Spec::Functions - portably perform operations on file names
-
-=head1 SYNOPSIS
-
-	use File::Spec::Functions;
-	$x = catfile('a','b');
-
-=head1 DESCRIPTION
-
-This module exports convenience functions for all of the class methods
-provided by File::Spec.
-
-For a reference of available functions, please consult L<File::Spec::Unix>,
-which contains the entire set, and which is inherited by the modules for
-other platforms. For further information, please see L<File::Spec::Mac>,
-L<File::Spec::OS2>, L<File::Spec::Win32>, or L<File::Spec::VMS>.
-
-=head2 Exports
-
-The following functions are exported by default.
-
-	canonpath
-	catdir
-	catfile
-	curdir
-	rootdir
-	updir
-	no_upwards
-	file_name_is_absolute
-	path
-
-
-The following functions are exported only by request.
-
-	devnull
-	tmpdir
-	splitpath
-	splitdir
-	catpath
-	abs2rel
-	rel2abs
-	case_tolerant
-
-All the functions may be imported using the C<:ALL> tag.
-
-=head1 SEE ALSO
-
-File::Spec, File::Spec::Unix, File::Spec::Mac, File::Spec::OS2,
-File::Spec::Win32, File::Spec::VMS, ExtUtils::MakeMaker

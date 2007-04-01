@@ -1,4 +1,4 @@
-#line 1 "inc/Test/Builder/Module.pm - /System/Library/Perl/5.8.6/Test/Builder/Module.pm"
+#line 1
 package Test::Builder::Module;
 
 use Test::Builder;
@@ -6,7 +6,7 @@ use Test::Builder;
 require Exporter;
 @ISA = qw(Exporter);
 
-$VERSION = '0.03';
+$VERSION = '0.68';
 
 use strict;
 
@@ -20,7 +20,7 @@ my $_export_to_level = sub {
 };
 
 
-#line 83
+#line 82
 
 sub import {
     my($class) = shift;
@@ -67,12 +67,12 @@ sub _strip_imports {
 }
 
 
-#line 145
+#line 144
 
 sub import_extra {}
 
 
-#line 176
+#line 175
 
 sub builder {
     return Test::Builder->new;

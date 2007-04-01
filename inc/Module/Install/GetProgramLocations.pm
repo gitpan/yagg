@@ -1,4 +1,4 @@
-#line 1 "inc/Module/Install/GetProgramLocations.pm - /Library/Perl/5.8.1/Module/Install/GetProgramLocations.pm"
+#line 1
 package Module::Install::GetProgramLocations;
 
 use strict;
@@ -18,7 +18,7 @@ use Module::Install::Base;
               &Get_Bzip2_Version
             );
 
-$VERSION = sprintf "%d.%02d%02d", q/0.30.0/ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d%02d", q/0.30.1/ =~ /(\d+)/g;
 
 # ---------------------------------------------------------------------------
 
@@ -395,5 +395,5 @@ sub Get_Bzip2_Version
 
 # ---------------------------------------------------------------------------
 
-#line 617
+#line 616
 

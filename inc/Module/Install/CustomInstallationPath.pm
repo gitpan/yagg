@@ -1,4 +1,4 @@
-#line 1 "inc/Module/Install/CustomInstallationPath.pm - /Library/Perl/5.8.1/Module/Install/CustomInstallationPath.pm"
+#line 1
 package Module::Install::CustomInstallationPath;
 
 use strict;
@@ -10,7 +10,7 @@ use vars qw( @ISA $VERSION );
 use Module::Install::Base;
 @ISA = qw( Module::Install::Base );
 
-$VERSION = '0.10.3';
+$VERSION = sprintf "%d.%02d%02d", q/0.10.30/ =~ /(\d+)/g;
 
 # ---------------------------------------------------------------------------
 
@@ -48,5 +48,5 @@ sub Check_Custom_Installation
 
 # ---------------------------------------------------------------------------
 
-#line 106
+#line 105
 
