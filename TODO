@@ -1,5 +1,8 @@
 Generator TODOs:
 
+- Implement the optimization used by Khorat: When doing the incrementing
+	following a failed action block, increment until one of the values accessed
+	by the action block is incremented.
 - Mark Morgan suggested using fork() to checkpoint state, so that unaction
   blocks are not necessary. Performance penalty?
 - Detect ambiguous grammars, either during generation or at runtime. This is
@@ -91,6 +94,8 @@ Generator TODOs:
 	http://www.lri.fr/~genrgens/manual/GRGs-manual-html/node5.html#SECTION00520000000000000000
 - Add support for random generation of integer/floating point values in a
 	range. (Casiano Rodriguez Leon <casiano@ull.es> asked for it.)
+- Do structure-coverage testing, where you generate only one random instance
+	of any given structure.
 
 -----------------------------------------------------------------------------
 
