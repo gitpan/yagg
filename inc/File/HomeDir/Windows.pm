@@ -4,19 +4,19 @@ package File::HomeDir::Windows;
 # Generalised implementation for the entire Windows family of operating
 # systems.
 
-use 5.005;
+use 5.00503;
 use strict;
-use Carp       ();
-use File::Spec ();
+use Carp                  ();
+use File::Spec            ();
+use File::HomeDir::Driver ();
 
-use vars qw{$VERSION};
+use vars qw{$VERSION @ISA};
 BEGIN {
-	$VERSION = '0.69';
+	$VERSION = '0.86';
+	@ISA     = 'File::HomeDir::Driver';
 }
 
-# If prefork is available, set Win32::TieRegistry
-# to be preloaded if needed.
-eval "use prefork 'Win32::TieRegistry'";
+sub CREATE () { 1 }
 
 
 
@@ -55,7 +55,8 @@ sub my_desktop {
 
 	# The most correct way to find the desktop
 	SCOPE: {
-		my $dir = $class->my_win32_folder('Desktop');
+		require Win32;
+		my $dir = Win32::GetFolderPath(Win32::CSIDL_DESKTOP(), CREATE);
 		return $dir if $dir and -d $dir;
 	}
 
@@ -88,7 +89,8 @@ sub my_documents {
 
 	# The most correct way to find my documents
 	SCOPE: {
-		my $dir = $class->my_win32_folder('Personal');
+		require Win32;
+		my $dir = Win32::GetFolderPath(Win32::CSIDL_PERSONAL(), CREATE);
 		return $dir if $dir and -d $dir;
 	}
 
@@ -100,7 +102,8 @@ sub my_data {
 
 	# The most correct way to find my documents
 	SCOPE: {
-		my $dir = $class->my_win32_folder('Local AppData');
+		require Win32;
+		my $dir = Win32::GetFolderPath(Win32::CSIDL_LOCAL_APPDATA(), CREATE);
 		return $dir if $dir and -d $dir;
 	}
 
@@ -112,7 +115,8 @@ sub my_music {
 
 	# The most correct way to find my music
 	SCOPE: {
-		my $dir = $class->my_win32_folder('My Music');
+		require Win32;
+		my $dir = Win32::GetFolderPath(Win32::CSIDL_MYMUSIC(), CREATE);
 		return $dir if $dir and -d $dir;
 	}
 
@@ -124,7 +128,8 @@ sub my_pictures {
 
 	# The most correct way to find my pictures
 	SCOPE: {
-		my $dir = $class->my_win32_folder('My Pictures');
+		require Win32;
+		my $dir = Win32::GetFolderPath(Win32::CSIDL_MYPICTURES(), CREATE);
 		return $dir if $dir and -d $dir;
 	}
 
@@ -136,29 +141,12 @@ sub my_videos {
 
 	# The most correct way to find my videos
 	SCOPE: {
-		my $dir = $class->my_win32_folder('My Video');
+		require Win32;
+		my $dir = Win32::GetFolderPath(Win32::CSIDL_MYVIDEO(), CREATE);
 		return $dir if $dir and -d $dir;
 	}
 
 	return undef;
-}
-
-# The explorer shell holds all sorts of folder information.
-# This method is specific to this platform
-sub my_win32_folder {
-	my $class = shift;
-
-	# Find the shell's folder hash
-	local $SIG{'__DIE__'} = '';
-	require Win32::TieRegistry;
-	my $folders = Win32::TieRegistry->new(
-		'HKEY_CURRENT_USER/Software/Microsoft/Windows/CurrentVersion/Explorer/Shell Folders',
-		{ Delimiter => '/' },
-		) or return undef;
-
-	# Find the specific folder
-	my $folder = $folders->GetValue(shift);
-	return $folder;
 }
 
 1;

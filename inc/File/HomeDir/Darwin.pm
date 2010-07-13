@@ -4,20 +4,24 @@ package File::HomeDir::Darwin;
 # Basic implementation for the Dawin family of operating systems.
 # This includes (most prominently) Mac OS X.
 
-use 5.005;
+use 5.00503;
 use strict;
-use base 'File::HomeDir::Unix';
-use Carp ();
-use Cwd  ();
+use Cwd                 ();
+use Carp                ();
+use File::HomeDir::Unix ();
 
-use vars qw{$VERSION};
+use vars qw{$VERSION @ISA};
 BEGIN {
-	$VERSION = '0.69';
+	$VERSION = '0.86';
+	@ISA     = 'File::HomeDir::Unix';
 }
 
 # Load early if in a forking environment and we have
 # prefork, or at run-time if not.
-eval "use prefork 'Mac::Files'";
+SCOPE: {
+	local $@;
+	eval "use prefork 'Mac::Files'";
+}
 
 
 
@@ -28,7 +32,15 @@ eval "use prefork 'Mac::Files'";
 
 sub my_home {
 	my ($class) = @_;
-	require Mac::Files;
+
+	# A lot of unix people and unix-derived tools rely on
+	# the ability to overload HOME. We will support it too
+	# so that they can replace raw HOME calls with File::HomeDir.
+	if ( exists $ENV{HOME} and defined $ENV{HOME} ) {
+		return $ENV{HOME};
+	}
+	
+  require Mac::Files;
 	$class->_find_folder(
 		Mac::Files::kCurrentUserFolderType(),
 		);
@@ -109,7 +121,7 @@ sub _find_folder {
 sub users_home {
 	my $class = shift;
 	my $home  = $class->SUPER::users_home(@_);
-	return Cwd::abs_path($home);
+	return defined $home ? Cwd::abs_path($home) : undef;
 }
 
 # in theory this can be done, but for now, let's cheat, since the
@@ -136,11 +148,10 @@ sub users_data {
 # there's really no other good way to do it at this time, that i know of -- pudge
 sub _to_user {
 	my ($class, $path, $name) = @_;
-
 	my $my_home    = $class->my_home;
 	my $users_home = $class->users_home($name);
-
-	$path =~ s/^Q$my_home/$users_home/;
+	defined $users_home or return undef;
+	$path =~ s/^\Q$my_home/$users_home/;
 	return $path;
 }
 

@@ -1,17 +1,18 @@
 #line 1
 package File::HomeDir;
 
-# See POD at end for docs
+# See POD at end for documentation
 
-use 5.005;
+use 5.00503;
 use strict;
 use Carp       ();
+use Config     ();
 use File::Spec ();
 
 # Globals
 use vars qw{$VERSION @ISA @EXPORT @EXPORT_OK $IMPLEMENTED_BY};
 BEGIN {
-	$VERSION = '0.69';
+	$VERSION = '0.86';
 
 	# Inherit manually
 	require Exporter;
@@ -33,32 +34,39 @@ BEGIN {
 		users_pictures
 		users_videos
 		users_data
-		};
+	};
 
 	# %~ doesn't need (and won't take) exporting, as it's a magic
 	# symbol name that's always looked for in package 'main'.
 }
 
-# Don't do platform detection at compile-time
-if ( $^O eq 'MSWin32' ) {
+# Inlined Params::Util functions
+sub _CLASS ($) {
+	(defined $_[0] and ! ref $_[0] and $_[0] =~ m/^[^\W\d]\w*(?:::\w+)*\z/s) ? $_[0] : undef;
+}
+sub _DRIVER ($$) {
+	(defined _CLASS($_[0]) and eval "require $_[0];" and ! $@ and $_[0]->isa($_[1]) and $_[0] ne $_[1]) ? $_[0] : undef;
+}
+
+# Platform detection
+if ( $IMPLEMENTED_BY ) {
+	# Allow for custom HomeDir classes
+	# Leave it as the existing value
+} elsif ( $^O eq 'MSWin32' ) {
 	# All versions of Windows
 	$IMPLEMENTED_BY = 'File::HomeDir::Windows';
-	require File::HomeDir::Windows;
-
-} elsif ( $^O eq 'darwin' ) {
-	# Modern Max OS X
+} elsif ( $^O eq 'darwin' && $Config::Config{ptrsize} != 8 ) {
+	# Modern Max OS X, but fallback to unix on 64 bit
 	$IMPLEMENTED_BY = 'File::HomeDir::Darwin';
-	require File::HomeDir::Darwin;
-
 } elsif ( $^O eq 'MacOS' ) {
 	# Legacy Mac OS
 	$IMPLEMENTED_BY = 'File::HomeDir::MacOS9';
-	require File::HomeDir::MacOS9;
-
 } else {
 	# Default to Unix semantics
 	$IMPLEMENTED_BY = 'File::HomeDir::Unix';
-	require File::HomeDir::Unix;
+}
+unless ( _DRIVER($IMPLEMENTED_BY, 'File::HomeDir::Driver') ) {
+	Carp::croak("Missing or invalid File::HomeDir driver $IMPLEMENTED_BY");
 }
 
 
@@ -248,4 +256,4 @@ tie %~, 'File::HomeDir::TIE';
 
 __END__
 
-#line 612
+#line 618

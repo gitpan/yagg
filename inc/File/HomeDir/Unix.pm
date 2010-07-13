@@ -3,14 +3,18 @@ package File::HomeDir::Unix;
 
 # Unix-specific functionality
 
-use 5.005;
+use 5.00503;
 use strict;
-use Carp ();
+use Carp                  ();
+use File::HomeDir::Driver ();
 
-use vars qw{$VERSION};
+use vars qw{$VERSION @ISA};
 BEGIN {
-	$VERSION = '0.69';
+	$VERSION = '0.86';
+	@ISA     = 'File::HomeDir::Driver';
 }
+
+
 
 
 
@@ -77,6 +81,8 @@ sub my_pictures {
 sub my_videos {
 	shift->my_home;
 }
+
+
 
 
 
